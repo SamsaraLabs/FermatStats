@@ -1,0 +1,23 @@
+{
+  "name": "samsara/fermat-stats",
+  "type": "library",
+  "description": "A module for the Fermat math library which adds statistics function.",
+  "keywords": ["math", "bigint", "large numbers", "numbers", "stats", "statistics", "gaussian", "poisson"],
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "samsara/fermat": ">=v2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "9.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Samsara\\Fermat\\": "src/Samsara/Fermat/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Samsara\\Fermat\\": "tests/Samsara/Fermat/"
+    }
+  }
+}

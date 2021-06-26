@@ -1,0 +1,17 @@
+language: php
+php:
+  - 8.0
+
+install:
+  - composer update
+
+before_script:
+  - mkdir build
+  - mkdir build/logs
+
+script:
+  - php vendor/bin/phpunit
+
+after_success:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover build/logs/coverage.clover
