@@ -4,6 +4,25 @@
   "description": "A module for the Fermat math library which adds statistics function.",
   "keywords": ["math", "bigint", "large numbers", "numbers", "stats", "statistics", "gaussian", "poisson"],
   "license": "GPL-2.0-or-later",
+  "homepage": "https://jordanrl.github.io/Fermat/",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/JordanRL"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/JordanRL/Fermat/issues",
+    "docs": "https://jordanrl.github.io/Fermat/",
+    "source": "https://github.com/SamsaraLabs/FermatStats"
+  },
+  "authors": [
+    {
+      "name": "Jordan LeDoux",
+      "homepage": "https://github.com/JordanRL",
+      "role": "Developer"
+    }
+  ],
   "require": {
     "samsara/fermat": ">=v2.0"
   },
