@@ -49,10 +49,10 @@ class Poisson extends Distribution
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
      */
-    public function probabilityOfKEvents($k): ImmutableDecimal
+    public function probabilityOfKEvents($k, int $scale = 10): ImmutableDecimal
     {
 
-        return $this->pmf($k);
+        return $this->pmf($k, $scale);
         
     }
 
@@ -63,7 +63,7 @@ class Poisson extends Distribution
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
      */
-    public function cdf($x): ImmutableDecimal
+    public function cdf($x, int $scale = 10): ImmutableDecimal
     {
 
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
@@ -76,10 +76,12 @@ class Poisson extends Distribution
             );
         }
 
+        $internalScale = $scale + 2;
+
         $cumulative = Numbers::makeZero();
 
         for ($i = 0;$x->isGreaterThanOrEqualTo($i);$i++) {
-            $cumulative = $cumulative->add($this->pmf($i));
+            $cumulative = $cumulative->add($this->pmf($i, $internalScale))->truncateToScale($scale);
         }
 
         return $cumulative;
@@ -87,13 +89,13 @@ class Poisson extends Distribution
     }
 
     /**
-     * @param int|float|DecimalInterface $x
+     * @param float|int|DecimalInterface $x
      *
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
      */
-    public function pmf($x): ImmutableDecimal
+    public function pmf(float|int|DecimalInterface $x, int $scale = 10): ImmutableDecimal
     {
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
 
@@ -105,10 +107,12 @@ class Poisson extends Distribution
             );
         }
 
-        $e = Numbers::makeE();
+        $internalScale = $scale + 2;
+
+        $e = Numbers::makeE($internalScale);
 
         /** @var ImmutableDecimal $pmf */
-        $pmf = $this->lambda->pow($x)->multiply($e->pow($this->lambda->multiply(-1)))->divide($x->factorial());
+        $pmf = $this->lambda->pow($x)->multiply($e->pow($this->lambda->multiply(-1)))->divide($x->factorial(), $internalScale)->truncateToScale($scale);
 
         return $pmf;
     }
@@ -145,7 +149,7 @@ class Poisson extends Distribution
 
         $cumulative = Numbers::makeZero();
 
-        for (;$larger->isGreaterThanOrEqualTo($smaller);$smaller->add(1)) {
+        for (;$larger->isGreaterThanOrEqualTo($smaller);$smaller = $smaller->add(1)) {
             $cumulative = $cumulative->add($this->pmf($smaller));
         }
 
@@ -156,6 +160,8 @@ class Poisson extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
+     *
+     * @codeCoverageIgnore
      */
     public function random(): ImmutableDecimal
     {
@@ -178,6 +184,8 @@ class Poisson extends Distribution
      * @throws OptionalExit
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
+     *
+     * @codeCoverageIgnore
      */
     public function rangeRandom($min = 0, $max = PHP_INT_MAX, int $maxIterations = 20): ImmutableDecimal
     {
@@ -207,6 +215,8 @@ class Poisson extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      * @throws IncompatibleObjectState
+     *
+     * @codeCoverageIgnore
      */
     protected function methodPARandom(): ImmutableDecimal
     {
@@ -266,6 +276,8 @@ class Poisson extends Distribution
     /**
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
+     *
+     * @codeCoverageIgnore
      */
     protected function knuthRandom(): ImmutableDecimal
     {

@@ -13,6 +13,7 @@ use Samsara\Fermat\Provider\StatsProvider;
 use Samsara\Fermat\Types\Base\Interfaces\Numbers\DecimalInterface;
 use Samsara\Fermat\Types\Base\Interfaces\Evaluateables\FunctionInterface;
 use Samsara\Fermat\Types\Base\Interfaces\Numbers\NumberInterface;
+use Samsara\Fermat\Types\NumberCollection;
 use Samsara\Fermat\Values\ImmutableDecimal;
 
 class Normal extends Distribution
@@ -71,21 +72,24 @@ class Normal extends Distribution
      * @throws IntegrityConstraint
      * @throws ReflectionException
      */
-    public function evaluateAt($x): ImmutableDecimal
+    public function evaluateAt($x, int $scale = 10): ImmutableDecimal
     {
 
-        $one = Numbers::makeOne();
-        $twoPi = Numbers::make2Pi();
-        $e = Numbers::makeE();
+        $one = Numbers::makeOne($scale);
+        $twoPi = Numbers::make2Pi($scale);
+        $e = Numbers::makeE($scale);
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
 
-        // $left = 1 / ( sqrt(2pi * SD^2) )
-        $left = $one->divide($twoPi->multiply($this->getSD()->pow(2))->sqrt());
-        // $right = e^( -1*((x - SD)^2)/(2*SD^2) )
-        $right = $e->pow($x->subtract($this->getMean())->pow(2)->divide($this->getSD()->pow(2)->multiply(2))->multiply(-1));
+        $internalScale = (new NumberCollection([$scale, $x]))->selectScale() + 2;
 
+        // $left = 1 / ( sqrt(2pi * SD^2) )
+        $left = $one->divide($twoPi->multiply($this->getSD()->pow(2))->sqrt($internalScale), $internalScale);
+        // $right = e^( -1*((x - SD)^2)/(2*SD^2) )
+        $right = $e->pow($x->subtract($this->getMean())->pow(2)->divide($this->getSD()->pow(2)->multiply(2), $internalScale)->multiply(-1));
+
+        // Return value is not inlined to ensure proper return type for IDE
         /** @var ImmutableDecimal $value */
-        $value = $left->multiply($right);
+        $value = $left->multiply($right)->truncateToScale($scale);
 
         return $value;
 
@@ -103,14 +107,18 @@ class Normal extends Distribution
      */
     public static function makeFromMean($p, $x, $mean): Normal
     {
-        $one = Numbers::makeOne();
+        $one = Numbers::makeOne(10);
         $p = Numbers::makeOrDont(Numbers::IMMUTABLE, $p);
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
         $mean = Numbers::makeOrDont(Numbers::IMMUTABLE, $mean);
 
-        $z = StatsProvider::inverseNormalCDF($one->subtract($p));
+        $internalScale = (new NumberCollection([$one, $p, $x, $mean]))->selectScale();
 
-        $sd = $x->subtract($mean)->divide($z);
+        $internalScale += 2;
+
+        $z = StatsProvider::inverseNormalCDF($one->subtract($p), $internalScale);
+
+        $sd = $x->subtract($mean)->divide($z, $internalScale)->abs()->truncateToScale($internalScale-2);
 
         return new Normal($mean, $sd);
     }
@@ -127,14 +135,18 @@ class Normal extends Distribution
      */
     public static function makeFromSd($p, $x, $sd): Normal
     {
-        $one = Numbers::makeOne();
+        $one = Numbers::makeOne(10);
         $p = Numbers::makeOrDont(Numbers::IMMUTABLE, $p);
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
         $sd = Numbers::makeOrDont(Numbers::IMMUTABLE, $sd);
 
-        $z = StatsProvider::inverseNormalCDF($one->subtract($p));
+        $internalScale = (new NumberCollection([$one, $p, $x, $sd]))->selectScale();
 
-        $mean = $x->subtract($z->multiply($sd));
+        $internalScale += 2;
+
+        $z = StatsProvider::inverseNormalCDF($one->subtract($p), $internalScale);
+
+        $mean = $x->add($z->multiply($sd))->truncateToScale($internalScale-2);
 
         return new Normal($mean, $sd);
     }
@@ -307,6 +319,8 @@ class Normal extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      * @throws ReflectionException
+     *
+     * @codeCoverageIgnore
      */
     public function random(): ImmutableDecimal
     {
@@ -334,6 +348,8 @@ class Normal extends Distribution
      * @throws OptionalExit
      * @throws IntegrityConstraint
      * @throws ReflectionException
+     *
+     * @codeCoverageIgnore
      */
     public function rangeRandom($min = 0, $max = PHP_INT_MAX, int $maxIterations = 20): ImmutableDecimal
     {

@@ -63,17 +63,34 @@ class NormalTest extends TestCase
 
     }
 
-    /*
-     * @large
-     *
+    /**
+     * @medium
+     */
     public function testMakes()
     {
 
         $normal = Normal::makeFromMean('0.1', 6, 10);
 
-        $this->assertEquals('0.60', $normal->pdf(8)->getValue());
+        $this->assertEquals('3.1212165842', $normal->getSD()->getValue());
+        $this->assertEquals('0.4783316307', $normal->pdf(8)->getValue());
+
+        $normal2 = Normal::makeFromSd('0.1', 6, '3.1212165843');
+
+        $this->assertEquals('10', $normal2->getMean()->getValue());
+        $this->assertEquals('0.4783316307', $normal2->pdf(8)->getValue());
 
     }
-    */
+
+    /**
+     * @medium
+     */
+    public function testEvaluateAt()
+    {
+
+        $normal = new Normal(10, 2);
+
+        $this->assertEquals('0.1994711402', $normal->evaluateAt(10)->getValue());
+
+    }
 
 }

@@ -46,7 +46,7 @@ class Exponential extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      */
-    public function cdf($x): ImmutableDecimal
+    public function cdf($x, int $scale = 10): ImmutableDecimal
     {
 
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
@@ -61,11 +61,13 @@ class Exponential extends Distribution
             );
         }
 
+        $internalScale = $scale + 2;
+
         /** @var ImmutableDecimal $e */
-        $e = Numbers::makeE();
+        $e = Numbers::makeE($internalScale);
 
         /** @var ImmutableDecimal $cdf */
-        $cdf = $one->subtract($e->pow($x->multiply($this->lambda)->multiply(-1)));
+        $cdf = $one->subtract($e->pow($x->multiply($this->lambda)->multiply(-1)))->truncateToScale($scale);
 
         return $cdf;
 
@@ -77,7 +79,7 @@ class Exponential extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      */
-    public function pdf($x): ImmutableDecimal
+    public function pdf($x, int $scale = 10): ImmutableDecimal
     {
 
         $x = Numbers::makeOrDont(Numbers::IMMUTABLE, $x);
@@ -90,11 +92,13 @@ class Exponential extends Distribution
             );
         }
 
+        $internalScale = $scale + 2;
+
         /** @var ImmutableDecimal $e */
-        $e = Numbers::makeE();
+        $e = Numbers::makeE($internalScale);
 
         /** @var ImmutableDecimal $pdf */
-        $pdf = $this->lambda->multiply($e->pow($this->lambda->multiply(-1)->multiply($x)));
+        $pdf = $this->lambda->multiply($e->pow($this->lambda->multiply(-1)->multiply($x)))->truncateToScale(10);
 
         return $pdf;
 
@@ -107,7 +111,7 @@ class Exponential extends Distribution
      * @return ImmutableDecimal
      * @throws IntegrityConstraint
      */
-    public function rangePdf($x1, $x2): ImmutableDecimal
+    public function rangePdf($x1, $x2, int $scale = 10): ImmutableDecimal
     {
         $x1 = Numbers::makeOrDont(Numbers::IMMUTABLE, $x1);
         $x2 = Numbers::makeOrDont(Numbers::IMMUTABLE, $x2);
@@ -120,14 +124,18 @@ class Exponential extends Distribution
             );
         }
 
+        $internalScale = $scale + 2;
+
         /** @var ImmutableDecimal $rangePdf */
-        $rangePdf = $this->pdf($x2)->subtract($this->pdf($x1))->abs();
+        $rangePdf = $this->pdf($x2, $internalScale)->subtract($this->pdf($x1, $internalScale))->abs()->truncateToScale($scale);
 
         return $rangePdf;
     }
 
     /**
      * @return ImmutableDecimal
+     *
+     * @codeCoverageIgnore
      */
     public function random(): ImmutableDecimal
     {
@@ -151,6 +159,8 @@ class Exponential extends Distribution
      *
      * @return ImmutableDecimal
      * @throws OptionalExit
+     *
+     * @codeCoverageIgnore
      */
     public function rangeRandom($min = 0, $max = PHP_INT_MAX, int $maxIterations = 20): ImmutableDecimal
     {
