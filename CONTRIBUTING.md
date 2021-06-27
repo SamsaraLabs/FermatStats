@@ -22,9 +22,9 @@ If you want to open up an issue for any other reason, please adhere to these gui
 In order for your pull request to be merged, the merge itself must meet the following guidelines:
 
 - New files created in the pull request must have a corresponding unit test file, or must be covered within an existing test file.
-- Your merge may not drop the project's test coverage below 85%.
+- Your merge may not drop the project's test coverage below 70%.
 - Your merge may not drop the project's test coverage by MORE than 5%.
-- Your merge must pass Travis-CI build tests for PHP 7.2+.
+- Your merge must pass CI build tests for PHP 8.0+.
 - You must make your pull request INTO the dev branch, and it is suggested that you work off of the dev branch.
 
 ## Coding Requirements

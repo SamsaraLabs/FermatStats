@@ -115,7 +115,7 @@ class StatsProviderTest extends TestCase
     public function testInverseErrorFunction()
     {
 
-        $answer = StatsProvider::inverseGaussErrorFunction('0.842700792949714');
+        $answer = StatsProvider::inverseGaussErrorFunction('0.842700792949714', 4);
 
         $this->assertEquals('1', $answer->getValue());
 
