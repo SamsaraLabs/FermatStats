@@ -56,7 +56,7 @@ class ExponentialTest extends TestCase
     public function testRangePdf()
     {
         $exp = new Exponential(10);
-        
+
         $this->assertEquals('2.3865121854', $exp->rangePdf('0.05', '0.1')->getValue());
     }
 
